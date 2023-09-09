@@ -12,18 +12,6 @@ import pdb
 
 app = Flask(__name__)
 
-# pessoas = [
-  # {
-  #   'id': 1,
-  #   'nome': 'Joao',
-  #   'sobrenome': 'Alcantara',
-  #   'cpf': 12312312312,
-  #   'idade': 20,
-  #   'email':'joao@teste.com',
-  #   'sexo': 'M'
-  # }
-# ]
-
 pessoas = []
 
 # Consultar(todos)
@@ -41,10 +29,10 @@ def get_pessoas():
 def get_pessoas_id(id):
 
   pessoas = sql.buscar_usuarios_id(id)
-  if pessoas:
+  if pessoas != []:
       return jsonify(pessoas), 200
   else:
-      return jsonify({'message': f"Pessoa com o ID '{id}' não existe."})
+      return jsonify({'message': f"Pessoa com o ID '{id}' não existe."}), 404
 
 # Editar
 # @app.route('/pessoas/<int:id>', methods=['PUT'])
@@ -58,9 +46,13 @@ def get_pessoas_id(id):
 # Criar
 @app.route('/pessoas', methods=['POST'])
 def create_pessoas():
+
+  pessoas = sql.buscar_usuarios_all()
+  ultimo_id = max(pessoas, key=lambda x: x['id'])['id']
+
   data = request.get_json()
 
-  id = data.get('id')
+  id = ultimo_id + 1
   nome = data.get('nome')
   sobrenome = data.get('sobrenome')
   cpf = data.get('cpf')
@@ -68,11 +60,32 @@ def create_pessoas():
   email = data.get('email')
   sexo = data.get('sexo')
 
-  if id and nome and sobrenome and cpf and idade and email and sexo:
-    sql.criar_usuario(id, nome, sobrenome, cpf, idade, email, sexo)
-    return jsonify({'message': 'Pessoa cadastrada com sucesso!'}), 201
+  validacao_cpf = sql.buscar_usuario_cpf(cpf)
+
+  if validacao_cpf == []:
+
+    if nome is None or sobrenome is None or cpf is None:
+      return jsonify({"error": "Nome, sobrenome e CPF não podem ser nulos."}), 400
+
+    if nome.isdigit() or sobrenome.isdigit():
+      return jsonify({"error": "Nome e sobrenome devem conter apenas letras."}), 400
+
+    if len(cpf) != 11 or not cpf.isdigit():
+      return jsonify({"error": f"CPF deve conter 11 caracteres numéricos, foi informado {len(cpf)}"}), 400
+
+    if not str(idade).isdigit():
+      return jsonify({"error": "O campo 'idade' deve conter apenas números."}), 400
+
+    if sexo not in ["M", "F"]:
+      return jsonify({"error": "O campo 'sexo' precisa ser 'M' ou 'F'."}), 400
+
+    if id and nome and sobrenome and cpf and idade and email and sexo:
+      sql.criar_usuario(id, nome, sobrenome, cpf, idade, email, sexo)
+      return jsonify({'message': 'Pessoa cadastrada com sucesso!'}), 201
+    else:
+      return jsonify({'error': 'Parâmetros inválidos'}), 400
   else:
-    return jsonify({'error': 'Parâmetros inválidos'}), 400
+    return jsonify({'message': f"CPF '{cpf}' já se econtra cadastrado no sistema!"}), 409
 
 # Excluir
 @app.route('/pessoas/<int:id>', methods=['DELETE'])

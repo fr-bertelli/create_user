@@ -2,12 +2,12 @@
 Api com a finalidade para estudos de testes em API
 
 # Verbos API REST utilizados
+http://localhost:5000/pessoas
 [POST] - Cadastrar usuário
 
 payload exemplo:
 
 {
-  'id': int,
   'nome': 'string',
   'sobrenome': 'string',
   'cpf': string,

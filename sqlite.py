@@ -11,7 +11,7 @@ def criar_usuario(id, nome, sobrenome, cpf, idade, email, sexo):
       bd = sql.connect('pessoas')
       cursor = bd.cursor()
 
-      # Inserir os dados da pessoa na tabela (supondo que você já tenha uma tabela chamada 'pessoas')
+      # Inserir os dados da pessoa na tabela
       cursor.execute("INSERT INTO pessoas (id, nome, sobrenome, cpf, idade, email, sexo) VALUES (?, ?, ?, ?, ?, ?, ?)",
       (id, nome, sobrenome, cpf, idade, email, sexo))
 
@@ -54,20 +54,25 @@ def buscar_usuarios_id(id):
     bd = sql.connect('pessoas')
     cursor = bd.cursor()
 
-    cursor.execute(f"SELECT * FROM pessoas WHERE id = {id}")
+    res = cursor.execute(f"SELECT * FROM pessoas WHERE id = {id}")
     resultado = cursor.fetchall()
+    # pdb.set_trace()
 
-    pessoa = {
-      'id': resultado[0][0],
-      'nome': resultado[0][1],
-      'sobrenome':resultado[0][2],
-      'cpf': resultado[0][3],
-      'idade': resultado[0][4],
-      'email': resultado[0][5],
-      'sexo': resultado[0][6]
-    }
+    if resultado != []:
+      pessoa = {
+        'id': resultado[0][0],
+        'nome': resultado[0][1],
+        'sobrenome':resultado[0][2],
+        'cpf': resultado[0][3],
+        'idade': resultado[0][4],
+        'email': resultado[0][5],
+        'sexo': resultado[0][6]
+      }
 
-    return pessoa
+      return pessoa
+    else:
+      return resultado
+
   except sql.Error as e:
     print(f"Erro ao buscar pessoa no banco: {e}")
   finally:
@@ -85,5 +90,19 @@ def excluir_usuario(id):
     return linhas_afetadas
   except sql.Error as e:
     print(f"Erro ao deletar o usuario: {e}")
+  finally:
+    bd.close()
+
+def buscar_usuario_cpf(cpf):
+  try:
+    bd = sql.connect('pessoas')
+    cursor = bd.cursor()
+
+    cursor.execute(F"SELECT * FROM pessoas WHERE cpf = {cpf}")
+    usuario = cursor.fetchall()
+
+    return usuario
+  except sql.Error as e:
+    print(f"Erro ao buscar usuario por cpf usuario: {e}")
   finally:
     bd.close()
