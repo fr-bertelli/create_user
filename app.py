@@ -100,4 +100,4 @@ def delete_pessoas(id):
     return jsonify({'message': f'Erro na exclusão: {retorno}'})
 
 
-app.run(port=5000,host='localhost',debug=True)
+app.run(port=5000,host='127.0.0.1',debug=True)
