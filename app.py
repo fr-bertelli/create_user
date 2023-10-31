@@ -59,12 +59,11 @@ def create_pessoas():
   idade = data.get('idade')
   email = data.get('email')
   sexo = data.get('sexo')
-
   validacao_cpf = sql.buscar_usuario_cpf(cpf)
 
-  if validacao_cpf == []:
+  if validacao_cpf == [] or validacao_cpf == None:
 
-    if nome is None or sobrenome is None or cpf is None:
+    if nome is None or sobrenome is None or cpf is None or nome == "" or sobrenome == "" or cpf == "" :
       return jsonify({"error": "Nome, sobrenome e CPF não podem ser nulos."}), 400
 
     if nome.isdigit() or sobrenome.isdigit():
